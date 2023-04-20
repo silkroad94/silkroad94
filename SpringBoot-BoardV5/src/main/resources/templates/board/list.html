@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시판 리스트</title>
+    <link rel="stylesheet" href="/css/default.css">
+    <script>
+      function search() {
+        let searchText = document.getElementById("searchText").value;
+        location.href="/board/list?searchText=" + searchText;
+      }
+    </script>
+</head>
+<body>
+<div id="container">
+  <h1>[ 게시판 - 리스트 ]</h1>
+  <div class="right">
+    <label for="searchText">검색</label>
+    <input type="search" id="searchText" name="searchText" th:value="${searchText}">
+    <input type="button" onclick="search()" value="검색">
+  </div>
+  <p>
+  <table>
+    <tr>
+      <th>No</th>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>조회수</th>
+      <th>작성일</th>
+    </tr>
+    <tr th:each="board, boardStat: ${boards}">
+      <td th:text="${boardStat.count}" class="center"></td>
+      <td class="center"><a th:text="${board.title}" th:href="@{/board/read(board_id=${board.board_id})}"></a></td>
+      <td th:text="${board.member_id}" class="center"></td>
+      <td th:text="${board.hit}" class="center"></td>
+      <td th:text="${#temporals.format(board.created_time, 'yyyy-MM-dd HH:mm')}" class="center"></td>
+    </tr>
+  </table>
+  <p>
+  <div id="navigator" class="center">
+  	<!-- 이전 그룹이 없을 경우 보여주지 않음 -->
+  	<th:block th:if="${navi.currentPage - navi.pagePerGroup > 0}">
+    	<a th:href="@{/board/list(page=${navi.currentPage - navi.pagePerGroup}, searchText=${searchText})}"><<</a>&nbsp;&nbsp;
+    </th:block>
+    <!-- 이전 페이지가 없을 경우 보여주지 않음 -->
+    <th:block th:if="${navi.currentPage - 1 > 0}">
+    	<a th:href="@{/board/list(page=${navi.currentPage - 1}, searchText=${searchText})}"><</a>&nbsp;&nbsp;
+    </th:block>
+
+    <th:block th:if="${navi.endPageGroup ne 0}">
+      <th:block th:each="counter : ${#numbers.sequence(navi.startPageGroup, navi.endPageGroup)}">
+          <a th:href="@{/board/list(page=${counter}, searchText=${searchText})}" th:text="${counter}"></a>&nbsp;
+      </th:block>
+    </th:block>
+    
+    <!-- 다음 페이지가 없을 경우 보여주지 않음 -->
+	<th:block th:if="${navi.currentPage < navi.totalPageCount}">
+    	<a th:href="@{/board/list(page=${navi.currentPage + 1}, searchText=${searchText})}">></a>&nbsp;&nbsp;
+    </th:block>
+    <!-- 다음 그룹이 없을 경우 보여주지 않음 -->
+    <th:block th:if="${navi.currentPage + navi.pagePerGroup < navi.totalPageCount}">
+    	<a th:href="@{/board/list(page=${navi.currentPage + navi.pagePerGroup}, searchText=${searchText})}">>></a>
+    </th:block>
+  </div>
+  <p>
+  <div class="center">
+    <input type="button" onclick="location.href='/board/list'" value="목록으로">
+    <input type="button" onclick="location.href='/board/write'" value="글쓰기">
+  </div>
+</div>
+</body>
+</html>

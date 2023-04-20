@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+    <link rel="stylesheet" href="/css/default.css">
+    <script>
+      function removeFile() {
+        document.getElementById("fileRemoved").value = "true";
+        document.getElementById("attachedFile").style.display = "none";
+      }
+    </script>
+</head>
+<body>
+<div id="container">
+  <h1>[ 게시판 - 글수정 ]</h1>
+  <form th:action="@{/board/update(board_id=${board.board_id})}" th:object="${board}" method="post" enctype="multipart/form-data">
+    <table>
+      <tr>
+        <th>제목</th>
+        <td>
+            <input type="text" th:field="*{title}">
+            <div class="error" th:errors="*{title}"></div>
+        </td>
+      </tr>
+      <tr>
+        <th>내용</th>
+        <td>
+          <textarea rows="10" cols="30" th:field="*{contents}" ></textarea>
+          <div class="error" th:errors="*{contents}"></div>
+        </td>
+      </tr>
+      <tr>
+        <th>조회수</th>
+        <td><span th:text="*{hit}"></span></td>
+      </tr>
+      <tr>
+        <th>작성일</th>
+        <td><span th:text="*{#temporals.format(created_time, 'yyyy-MM-dd HH:mm')}"></span></td>
+      </tr>
+      <tr>
+        <th>작성자</th>
+        <td th:text="*{member_id}"></td>
+      </tr>
+      <tr>
+        <th>첨부파일</th>
+        <td>
+          <div id="attachedFile" th:if="${file}">
+            <a th:href="@{/board/download/{id}(id=${file.attachedFile_id})}" th:text="${file.original_filename}"></a>
+            <input type="button" onclick="removeFile()" value="삭제">
+          </div>
+          <input type="file" name="file">
+        </td>
+      </tr>
+    </table>
+    <input type="hidden" th:field="*{hit}">
+    <input type="hidden" th:field="*{created_time}">
+    <input type="hidden" th:field="*{member_id}">
+    <input type="hidden" th:field="*{fileRemoved}">
+    <p>
+    <div class="center">
+      <input type="button" onclick="location.href='/board/list'" value="목록으로">
+      <input type="submit" value="수정하기">
+      <input type="reset" value="취소">
+    </div>
+  </form>
+</div>
+</body>
+</html>

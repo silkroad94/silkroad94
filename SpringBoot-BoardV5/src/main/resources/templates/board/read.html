@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 읽기</title>
+    <link rel="stylesheet" href="/css/default.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script th:inline="javascript">
+      function writeReply() {
+        let board_id = [[${board.board_id}]];
+        let content = $("#reply").val();
+        // 리플 내용이 없으면 등록하지 않는다.
+        if (content === "") {
+          alert("리플 내용을 입력하세요");
+          $("#reply").focus();
+          return;
+        }
+        $.ajax({
+          url: "/reply/" + board_id,
+          type: "post",
+          data: {
+            "content": content
+          },
+          success: function (data, success, xhr) {
+            console.log(data);
+            getReplies();
+          },
+          error: function (xhr, status, error) {
+            console.log(status);
+          }
+        });
+      }
+
+      function getReplies() {
+        let board_id = [[${board.board_id}]];
+        $.ajax({
+          url: "/reply/" + board_id,
+          success: function (data, success, xhr) {
+            console.log(data);
+            showReplies(data);
+          },
+          error: function (xhr, status, error) {
+            console.log(status);
+          }
+        });
+      }
+
+      function showReplies(data) {
+        $("#replies").html("");
+        let str = "";
+        str += "<table>";
+        str += "  <tr>";
+        str += "      <th>No.</th>";
+        str += "      <th>내용.</th>";
+        str += "      <th>작성자.</th>";
+        str += "      <th>작성일</th>";
+        str += "  </tr>";
+        if (data.length > 0) {
+          $(data).each(function(idx, obj) {
+            let created_time = new Date(obj.created_time);
+            let time = created_time.getFullYear() + "."
+                    + (created_time.getMonth() + 1) + "."
+                    + created_time.getDate() + ". "
+                    + created_time.getHours() + ":"
+                    + created_time.getMinutes();
+
+            str += "<tr>";
+            str += "  <td class='center'>" + (idx + 1) + "</td>";
+            if (obj.writer == true) {
+              str += "  <td><input type='text' id='reply_" + obj.reply_id + "' value='" + obj.content + "'>";
+              str += "<input type='button' value='수정' onclick='updateReply(" + obj.reply_id + ")'>";
+              str += "<input type='button' value='삭제' onclick='removeReply(" + obj.reply_id + ")'>";
+            } else {
+              str += "  <td>" + obj.content;
+            }
+            str += "  </td>";
+            str += "  <td class='center'>" + obj.member_id + "</td>";
+            str += "  <td class='center'>" + time + "</td>";
+            str += "</tr>";
+          });
+        } else {
+          str += "<tr>"
+          str += "<td class='center' colspan='4'>등록된 리플이 없습니다.</td>"
+          str += "<tr>"
+        }
+        str += "</table>";
+        $("#replies").append(str);
+      }
+
+      function updateReply(reply_id) {
+        let check = confirm("리플을 수정 하시겠습니까?");
+        if (check) {
+          let board_id = [[${board.board_id}]];
+          let content = $("#reply_" + reply_id).val();
+          $.ajax({
+            url: "/reply/" + board_id + "/" + reply_id,
+            type: "put",
+            data: {
+              "content": content
+            },
+            success: function (data) {
+              console.log(data);
+              getReplies();
+            },
+            error: function (xhr, status, error) {
+              console.log(status);
+            }
+          });
+        }
+      }
+
+      function removeReply(reply_id) {
+        let check = confirm("리플을 삭제 하시겠습니까?");
+        if (check) {
+          let board_id = [[${board.board_id}]];
+          $.ajax({
+            url: "/reply/" + board_id + "/" + reply_id,
+            type: "delete",
+            success: function (data) {
+              getReplies();
+            },
+            error: function (xhr, status, error) {
+              console.log(status);
+            }
+          });
+        }
+      }
+
+      $(function () {
+        // 페이지가 로딩되면 getReplies() 함수를 자동으로 호출한다.
+        getReplies();
+        // 리플을 작성하고 엔터키를 입력하면 리플을 등록한다.
+        $("#reply").keydown(function(event){
+          if (event.originalEvent.code === "Enter") {
+            writeReply();
+          }
+        });
+      });
+    </script>
+</head>
+<body>
+<div id="container">
+  <h1>[ 게시판 - 글 읽기 ]</h1>
+    <table th:object="${board}">
+      <tr>
+        <th>제목</th>
+        <td th:text="*{title}"></td>
+      </tr>
+      <tr>
+        <th>내용</th>
+        <td th:utext="*{contents}"></td>
+      </tr>
+      <tr>
+        <th>조회수</th>
+        <td th:text="*{hit}"></td>
+      </tr>
+      <tr>
+        <th>작성일</th>
+        <td th:text="${#temporals.format(board.created_time, 'yyyy-MM-dd HH:mm')}"></td>
+      </tr>
+      <tr>
+        <th>작성자</th>
+        <td th:text="*{member_id}"></td>
+      </tr>
+      <tr>
+        <th>첨부파일</th>
+        <td>
+          <a th:if="${file}" th:href="@{/board/download/{id}(id=${file.attachedFile_id})}" th:text="${file.original_filename}"></a>
+        </td>
+      </tr>
+    </table>
+    <p>
+    <div class="center">
+      <input type="button" onclick="location.href='/board/list'" value="목록으로">
+      <th:block th:if="${session.loginMember.member_id == board.member_id}">
+        <input type="button" th:onclick="|location.href='/board/update?board_id=${board.board_id}'|" value="수정하기">
+        <input type="button" th:onclick="|location.href='/board/delete?board_id=${board.board_id}'|" value="삭제하기">
+      </th:block>
+    </div>
+    <p>
+    <div>
+      <label for="reply">리플쓰기: </label>
+      <input type="text" id="reply" name="reply">
+      <input type="button" value="등록" onclick="writeReply()">
+    </div>
+    <p>
+    <div id="replies"></div>
+</div>
+</body>
+</html>

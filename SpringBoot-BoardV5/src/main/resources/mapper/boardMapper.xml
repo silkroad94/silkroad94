@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.board.repository.BoardMapper">
+    <!--  게시글 저장  -->
+    <insert id="saveBoard">
+        <selectKey keyProperty="board_id" resultType="long" order="BEFORE">
+            select seq_board.nextval from dual
+        </selectKey>
+        insert into board (
+            board_id,
+            title,
+            contents,
+            member_id
+        ) values (
+            #{board_id},
+            #{title},
+            #{contents},
+            #{member_id}
+        )
+    </insert>
+
+    <!--  전체 게시글 갯수  -->
+    <select id="getTotal" resultType="int">
+        select count(*) from board
+        <if test="_parameter != null">
+            where title like '%' || #{searchText} || '%'
+        </if>
+    </select>
+
+    <!--  전체 게시글 검색  -->
+    <select id="findBoards" resultType="board">
+        select * from board
+        <if test="_parameter != null">
+            where title like '%' || #{searchText} || '%'
+        </if>
+        order by created_time desc
+    </select>
+
+    <!--  게시글 아이디로 검색  -->
+    <select id="findBoard" resultType="board">
+        select * from board where board_id = #{board_id}
+    </select>
+
+    <!--  게시글 수정  -->
+    <update id="updateBoard">
+        update board
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="contents != null">contents = #{contents},</if>
+            <if test="hit != null">hit = #{hit},</if>
+        </set>
+        where board_id = #{board_id}
+    </update>
+
+    <!--  게시글 삭제  -->
+    <delete id="removeBoard">
+        delete from board where board_id = #{board_id}
+    </delete>
+
+    <!--  첨부파일 저장  -->
+    <insert id="saveFile">
+        <selectKey keyProperty="attachedFile_id" resultType="long" order="BEFORE">
+            select seq_board.nextval from dual
+        </selectKey>
+        insert into attached_file (
+            attachedFile_id,
+            board_id,
+            original_filename,
+            saved_filename,
+            file_size
+        ) values (
+            #{attachedFile_id},
+            #{board_id},
+            #{original_filename},
+            #{saved_filename},
+            #{file_size}
+        )
+    </insert>
+
+    <!--  게시글 아이디로 첨부파일 검색  -->
+    <select id="findFileByBoardId" resultType="file">
+        select * from attached_file where board_id = #{board_id}
+    </select>
+
+    <!--  첨부파일 아이디로 첨부파일 검색  -->
+    <select id="findFileByAttachedFileId" resultType="file">
+        select * from attached_file where attachedFile_id = #{attachedFile_id}
+    </select>
+
+    <!--  첨부파일 삭제  -->
+    <delete id="removeAttachedFile">
+        delete from attached_file where attachedFile_id = #{attachedFile_id}
+    </delete>
+</mapper>

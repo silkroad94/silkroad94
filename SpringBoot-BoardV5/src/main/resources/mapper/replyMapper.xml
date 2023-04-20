@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.board.repository.ReplyMapper">
+    <!-- 리플 등록 -->
+    <insert id="saveReply">
+    	<selectKey keyProperty="reply_id" resultType="long" order="BEFORE">
+    		select seq_board.nextval from dual
+    	</selectKey>
+    	insert into reply (
+    		reply_id,
+    		board_id,
+    		member_id,
+    		content
+    	) values (
+    		#{reply_id},
+    		#{board_id},
+    		#{member_id},
+    		#{content}
+    	)
+    </insert>
+    
+    <!-- 리플 읽기 -->
+    <select id="findReply" resultType="reply">
+    	select * from reply where reply_id = #{reply_id}
+    </select>
+    
+    <!-- 리플 목록 -->
+	<select id="findReplies" resultType="reply">
+		select * 
+		from reply 
+		where board_id = #{board_id} 
+		order by created_time desc
+	</select>
+    
+    <!-- 리플 수정 -->
+    <update id="updateReply">
+        update reply
+        <set>
+            <if test="content != null">content = #{content}</if>
+        </set>
+        where reply_id = #{reply_id}
+    </update>
+    
+    <!-- 리플 삭제 -->
+    <delete id="removeReply">
+        delete from reply where reply_id = #{reply_id}
+    </delete>
+</mapper>
+
+
+
+
+
+
+

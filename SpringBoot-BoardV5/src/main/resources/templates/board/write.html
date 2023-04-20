@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>글쓰기</title>
+    <link rel="stylesheet" href="/css/default.css">
+</head>
+<body>
+<div id="container">
+  <h1>[ 게시판 - 글쓰기 ]</h1>
+  <p>
+  <form action="write" method="post" enctype="multipart/form-data" th:object="${writeForm}">
+    <table>
+      <tr>
+        <th>제목</th>
+        <td>
+          <input type="text" th:field="*{title}">
+          <div class="error" th:errors="*{title}"></div>
+        </td>
+      </tr>
+      <tr>
+        <th>내용</th>
+        <td>
+          <textarea rows="10" cols="30" th:field="*{contents}"></textarea>
+          <div class="error" th:errors="*{contents}"></div>
+        </td>
+      </tr>
+      <tr>
+        <th>첨부파일</th>
+        <td>
+          <input type="file" name="file">
+        </td>
+      </tr>
+    </table>
+    <p>
+    <div class="center">
+      <input type="button" onclick="location.href='/board/list'" value="목록으로">
+      <input type="submit" value="등록하기">
+      <input type="reset" value="취소">
+    </div>
+  </form>
+</div>
+</body>
+</html>
